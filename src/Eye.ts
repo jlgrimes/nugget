@@ -23,18 +23,29 @@ export class Eye {
     this.group = new THREE.Group();
     this.basePosition = { x, y };
 
-    // Create white part of the eye
-    this.currentGeometry = new THREE.SphereGeometry(1, 32, 32);
+    // Create base geometry
+    const baseGeometry = new THREE.SphereGeometry(1, 32, 32);
+    const positions = baseGeometry.attributes.position.array;
+    const morphPositions = new Float32Array(positions.length);
 
-    // Create morph target for bobbing
-    const morphTarget = new THREE.Vector3(0, 0.1, 0);
+    // Create morph target that moves vertices up
+    for (let i = 0; i < positions.length; i += 3) {
+      morphPositions[i] = positions[i]; // x stays the same
+      morphPositions[i + 1] = positions[i + 1] + 0.1; // y moves up
+      morphPositions[i + 2] = positions[i + 2]; // z stays the same
+    }
+
+    this.currentGeometry = baseGeometry;
     this.currentGeometry.morphAttributes.position = [
-      new THREE.Float32BufferAttribute(morphTarget.toArray(), 3),
+      new THREE.Float32BufferAttribute(morphPositions, 3),
     ];
 
-    this.currentMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    this.currentMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+    });
     this.whiteEye = new THREE.Mesh(this.currentGeometry, this.currentMaterial);
     this.whiteEye.scale.copy(this.currentScale);
+    this.morphTargetInfluences = [0];
     this.whiteEye.morphTargetInfluences = this.morphTargetInfluences;
     this.group.add(this.whiteEye);
 
@@ -165,7 +176,7 @@ export class Eye {
         const idleOffsetX = this.basePosition.x > 0 ? -0.8 : -0.1;
         const idleOffsetY = -0.2;
         this.setPosition(idleOffsetX, idleOffsetY);
-        this.startBobbing(0.05);
+        this.startBobbing(0.15);
         break;
       case 'listening':
         this.startTween(new THREE.Vector3(1.2, 1.5, 1));
@@ -189,9 +200,18 @@ export class Eye {
     this.currentGeometry.dispose();
 
     // Create morph target for bobbing
-    const morphTarget = new THREE.Vector3(0, 0.1, 0);
+    const positions = newGeometry.attributes.position.array;
+    const morphPositions = new Float32Array(positions.length);
+
+    // Create morph target that moves vertices up
+    for (let i = 0; i < positions.length; i += 3) {
+      morphPositions[i] = positions[i]; // x stays the same
+      morphPositions[i + 1] = positions[i + 1] + 0.1; // y moves up
+      morphPositions[i + 2] = positions[i + 2]; // z stays the same
+    }
+
     newGeometry.morphAttributes.position = [
-      new THREE.Float32BufferAttribute(morphTarget.toArray(), 3),
+      new THREE.Float32BufferAttribute(morphPositions, 3),
     ];
 
     // Update the mesh with the new geometry

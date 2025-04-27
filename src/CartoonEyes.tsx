@@ -27,6 +27,11 @@ const CartoonEyes = () => {
     // Camera position
     camera.position.z = 5;
 
+    // Add lighting
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(0, 0, 1);
+    scene.add(light);
+
     // Create eyes
     leftEyeRef.current = new Eye(-1.3, 0);
     rightEyeRef.current = new Eye(1.3, 0);

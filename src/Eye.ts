@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js';
 
-export type EyeState = 'idle' | 'listening';
+export type EyeState = 'idle' | 'listening' | 'thinking';
 
 export class Eye {
   private group: THREE.Group;
@@ -14,8 +14,10 @@ export class Eye {
   private currentMaterial: THREE.Material;
   private currentTween: TWEEN.Tween<THREE.Vector3> | null = null;
   private basePosition: { x: number; y: number };
-  private bobTween: TWEEN.Tween<THREE.Vector3> | null = null;
+  private bobTween: TWEEN.Tween<{ influence: number }> | null = null;
   private isBobbing: boolean = false;
+  private currentBobAmount: number = 0.1;
+  private morphTargetInfluences: number[] = [0];
 
   constructor(x: number, y: number = 0) {
     this.group = new THREE.Group();
@@ -23,9 +25,17 @@ export class Eye {
 
     // Create white part of the eye
     this.currentGeometry = new THREE.SphereGeometry(1, 32, 32);
+
+    // Create morph target for bobbing
+    const morphTarget = new THREE.Vector3(0, 0.1, 0);
+    this.currentGeometry.morphAttributes.position = [
+      new THREE.Float32BufferAttribute(morphTarget.toArray(), 3),
+    ];
+
     this.currentMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
     this.whiteEye = new THREE.Mesh(this.currentGeometry, this.currentMaterial);
     this.whiteEye.scale.copy(this.currentScale);
+    this.whiteEye.morphTargetInfluences = this.morphTargetInfluences;
     this.group.add(this.whiteEye);
 
     this.group.position.set(x, y, 0);
@@ -94,6 +104,7 @@ export class Eye {
       x: this.basePosition.x + x,
       y: this.basePosition.y + y,
     };
+
     new TWEEN.Tween(this.group.position)
       .to(targetPosition, 500)
       .easing(TWEEN.Easing.Cubic.Out)
@@ -122,13 +133,17 @@ export class Eye {
     if (this.bobTween) {
       this.bobTween.stop();
     }
+    this.currentBobAmount = bobAmount;
 
-    const startY = this.group.position.y;
-    this.bobTween = new TWEEN.Tween(this.group.position)
-      .to({ y: startY + bobAmount }, 2000)
+    this.bobTween = new TWEEN.Tween({ influence: 0 })
+      .to({ influence: 1 }, 2000)
       .easing(TWEEN.Easing.Sinusoidal.InOut)
       .yoyo(true)
       .repeat(Infinity)
+      .onUpdate(({ influence }) => {
+        this.morphTargetInfluences[0] = influence * bobAmount;
+        this.whiteEye.morphTargetInfluences = this.morphTargetInfluences;
+      })
       .start();
     this.isBobbing = true;
   }
@@ -159,6 +174,13 @@ export class Eye {
         this.setPosition(offset, 0);
         this.startBobbing(0.1);
         break;
+      case 'thinking':
+        this.startTween(new THREE.Vector3(0.8, 1, 1));
+        const thinkingOffsetX = this.basePosition.x > 0 ? 0.5 : 1.2;
+        const thinkingOffsetY = 1;
+        this.setPosition(thinkingOffsetX, thinkingOffsetY);
+        this.startBobbing(0.05);
+        break;
     }
   }
 
@@ -166,9 +188,16 @@ export class Eye {
     // Dispose of the old geometry
     this.currentGeometry.dispose();
 
+    // Create morph target for bobbing
+    const morphTarget = new THREE.Vector3(0, 0.1, 0);
+    newGeometry.morphAttributes.position = [
+      new THREE.Float32BufferAttribute(morphTarget.toArray(), 3),
+    ];
+
     // Update the mesh with the new geometry
     this.currentGeometry = newGeometry;
     this.whiteEye.geometry = this.currentGeometry;
+    this.whiteEye.morphTargetInfluences = this.morphTargetInfluences;
   }
 
   public getState(): EyeState {

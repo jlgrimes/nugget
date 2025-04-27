@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as TWEEN from '@tweenjs/tween.js';
 
 export type EyeState =
   | 'normal'
@@ -18,6 +19,7 @@ export class Eye {
   private animationSpeed: number = 0.1;
   private currentGeometry: THREE.BufferGeometry;
   private currentMaterial: THREE.Material;
+  private currentTween: TWEEN.Tween<THREE.Vector3> | null = null;
 
   constructor(x: number) {
     this.group = new THREE.Group();
@@ -131,40 +133,52 @@ export class Eye {
   }
 
   public update(deltaTime: number) {
-    // Smoothly interpolate current scale to target scale
-    this.currentScale.lerp(this.targetScale, this.animationSpeed);
-    this.whiteEye.scale.copy(this.currentScale);
+    TWEEN.update();
+  }
+
+  private startTween(targetScale: THREE.Vector3) {
+    if (this.currentTween) {
+      this.currentTween.stop();
+    }
+
+    this.currentTween = new TWEEN.Tween(this.currentScale)
+      .to(targetScale, 500) // 500ms duration
+      .easing(TWEEN.Easing.Quadratic.Out)
+      .onUpdate(() => {
+        this.whiteEye.scale.copy(this.currentScale);
+      })
+      .start();
   }
 
   public setState(state: EyeState) {
     this.currentState = state;
     switch (state) {
       case 'normal':
-        this.targetScale.set(1.2, 1.5, 1);
+        this.startTween(new THREE.Vector3(1.2, 1.5, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
         break;
       case 'surprised':
-        this.targetScale.set(1.2, 2, 1);
+        this.startTween(new THREE.Vector3(1.2, 2, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
         break;
       case 'sleepy':
-        this.targetScale.set(1.2, 0.8, 1);
+        this.startTween(new THREE.Vector3(1.2, 0.8, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
         break;
       case 'angry':
-        this.targetScale.set(1.5, 1.2, 1);
+        this.startTween(new THREE.Vector3(1.5, 1.2, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
         break;
       case 'anxious':
-        this.targetScale.set(1.1, 1.3, 1);
+        this.startTween(new THREE.Vector3(1.1, 1.3, 1));
         this.updateGeometry(this.createAnxiousGeometry());
         break;
       case 'idle':
-        this.targetScale.set(1.1, 1.1, 1);
+        this.startTween(new THREE.Vector3(1.1, 1.1, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
         break;
       case 'listening':
-        this.targetScale.set(1.3, 1.4, 1);
+        this.startTween(new THREE.Vector3(1.3, 1.4, 1));
         this.updateGeometry(this.createListeningGeometry());
         break;
     }
@@ -184,6 +198,9 @@ export class Eye {
   }
 
   public dispose() {
+    if (this.currentTween) {
+      this.currentTween.stop();
+    }
     this.currentGeometry.dispose();
     this.currentMaterial.dispose();
   }

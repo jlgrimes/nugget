@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export type EyeState = 'normal' | 'surprised' | 'sleepy' | 'angry';
+export type EyeState = 'normal' | 'surprised' | 'sleepy' | 'angry' | 'anxious';
 
 export class Eye {
   private group: THREE.Group;
@@ -47,6 +47,9 @@ export class Eye {
         break;
       case 'angry':
         this.targetScale.set(1.5, 1.2, 1);
+        break;
+      case 'anxious':
+        this.targetScale.set(1.1, 1.3, 1); // Slightly smaller and more tense
         break;
     }
   }

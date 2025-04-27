@@ -104,24 +104,24 @@ const CartoonEyes = () => {
           zIndex: 1,
         }}
       >
-        {(['normal', 'surprised', 'sleepy', 'angry'] as EyeState[]).map(
-          state => (
-            <button
-              key={state}
-              onClick={() => setCurrentState(state)}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: currentState === state ? '#4CAF50' : '#f0f0f0',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                color: currentState === state ? 'white' : 'black',
-              }}
-            >
-              {state.charAt(0).toUpperCase() + state.slice(1)}
-            </button>
-          )
-        )}
+        {(
+          ['normal', 'surprised', 'sleepy', 'angry', 'anxious'] as EyeState[]
+        ).map(state => (
+          <button
+            key={state}
+            onClick={() => setCurrentState(state)}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: currentState === state ? '#4CAF50' : '#f0f0f0',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              color: currentState === state ? 'white' : 'black',
+            }}
+          >
+            {state.charAt(0).toUpperCase() + state.slice(1)}
+          </button>
+        ))}
       </div>
     </div>
   );

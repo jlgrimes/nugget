@@ -124,14 +124,14 @@ export class Eye {
       .start();
   }
 
-  private startBobbing() {
+  private startBobbing(bobAmount: number = 0.1) {
     if (this.bobTween) {
       this.bobTween.stop();
     }
 
     const startY = this.group.position.y;
     this.bobTween = new TWEEN.Tween(this.group.position)
-      .to({ y: startY + 0.1 }, 2000)
+      .to({ y: startY + bobAmount }, 2000)
       .easing(TWEEN.Easing.Sinusoidal.InOut)
       .yoyo(true)
       .repeat(Infinity)
@@ -156,14 +156,14 @@ export class Eye {
         const idleOffsetX = this.basePosition.x > 0 ? -0.8 : -0.1;
         const idleOffsetY = -0.2;
         this.setPosition(idleOffsetX, idleOffsetY);
-        this.startBobbing();
+        this.startBobbing(0.05);
         break;
       case 'listening':
         this.startTween(new THREE.Vector3(1.2, 1.5, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
         const offset = this.basePosition.x > 0 ? 0.2 : -0.2;
         this.setPosition(offset, 0);
-        this.startBobbing();
+        this.startBobbing(0.1);
         break;
       case 'surprised':
         this.stopBobbing();

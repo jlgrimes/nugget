@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js';
 
-export type EyeState = 'idle' | 'listening' | 'thinking';
+export type EyeState = 'idle' | 'listening' | 'thinking' | 'talking-rest';
 
 export class Eye {
   private group: THREE.Group;
@@ -176,6 +176,13 @@ export class Eye {
         const idleOffsetX = this.basePosition.x > 0 ? -0.8 : -0.1;
         const idleOffsetY = -0.2;
         this.setPosition(idleOffsetX, idleOffsetY);
+        this.startBobbing(0.15);
+        break;
+      case 'talking-rest':
+        this.startTween(new THREE.Vector3(0.8, 1, 1));
+        this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
+        const talkingOffsetX = this.basePosition.x > 0 ? -0.5 : 0.1;
+        this.setPosition(talkingOffsetX, 0);
         this.startBobbing(0.15);
         break;
       case 'listening':

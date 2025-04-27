@@ -28,8 +28,8 @@ const CartoonEyes = () => {
     camera.position.z = 5;
 
     // Create eyes
-    leftEyeRef.current = new Eye(-1.5);
-    rightEyeRef.current = new Eye(1.5);
+    leftEyeRef.current = new Eye(-1.3);
+    rightEyeRef.current = new Eye(1.3);
     scene.add(leftEyeRef.current.getGroup());
     scene.add(rightEyeRef.current.getGroup());
 

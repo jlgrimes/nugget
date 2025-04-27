@@ -102,7 +102,7 @@ export class Eye {
     };
     new TWEEN.Tween(this.group.position)
       .to(targetPosition, 500)
-      .easing(TWEEN.Easing.Quadratic.Out)
+      .easing(TWEEN.Easing.Cubic.Out)
       .start();
   }
 
@@ -117,7 +117,7 @@ export class Eye {
 
     this.currentTween = new TWEEN.Tween(this.currentScale)
       .to(targetScale, 500) // 500ms duration
-      .easing(TWEEN.Easing.Quadratic.Out)
+      .easing(TWEEN.Easing.Cubic.Out)
       .onUpdate(() => {
         this.whiteEye.scale.copy(this.currentScale);
       })

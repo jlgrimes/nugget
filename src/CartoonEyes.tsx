@@ -46,18 +46,6 @@ const CartoonEyes = () => {
       renderer.render(scene, camera);
     };
 
-    // Mouse move handler
-    const handleMouseMove = (event: MouseEvent) => {
-      const mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-      const mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
-
-      if (leftEyeRef.current && rightEyeRef.current) {
-        leftEyeRef.current.lookAt(mouseX, mouseY);
-        rightEyeRef.current.lookAt(mouseX, mouseY);
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
     animate();
 
     // Handle window resize
@@ -72,7 +60,6 @@ const CartoonEyes = () => {
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
       mountRef.current?.removeChild(renderer.domElement);
       if (leftEyeRef.current) {
         leftEyeRef.current.dispose();
@@ -105,7 +92,15 @@ const CartoonEyes = () => {
         }}
       >
         {(
-          ['normal', 'surprised', 'sleepy', 'angry', 'anxious'] as EyeState[]
+          [
+            'normal',
+            'surprised',
+            'sleepy',
+            'angry',
+            'anxious',
+            'idle',
+            'listening',
+          ] as EyeState[]
         ).map(state => (
           <button
             key={state}

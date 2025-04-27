@@ -4,7 +4,7 @@ import { Eye, EyeState } from './Eye';
 
 const CartoonEyes = () => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const [currentState, setCurrentState] = useState<EyeState>('normal');
+  const [currentState, setCurrentState] = useState<EyeState>('idle');
   const leftEyeRef = useRef<Eye | null>(null);
   const rightEyeRef = useRef<Eye | null>(null);
   const clockRef = useRef<THREE.Clock>(new THREE.Clock());
@@ -93,13 +93,12 @@ const CartoonEyes = () => {
       >
         {(
           [
-            'normal',
+            'idle',
+            'listening',
             'surprised',
             'sleepy',
             'angry',
             'anxious',
-            'idle',
-            'listening',
           ] as EyeState[]
         ).map(state => (
           <button

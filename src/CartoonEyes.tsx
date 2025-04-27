@@ -26,10 +26,12 @@ const CartoonEyes = () => {
     const createEye = (x: number) => {
       const group = new THREE.Group();
 
-      // White part of the eye
+      // White part of the eye (oval shape)
       const whiteGeometry = new THREE.SphereGeometry(1, 32, 32);
       const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
       const whiteEye = new THREE.Mesh(whiteGeometry, whiteMaterial);
+      // Scale to create oval shape (wider than tall)
+      whiteEye.scale.set(1.2, 1.5, 1);
       group.add(whiteEye);
 
       // Black part of the eye (pupil)
@@ -37,6 +39,8 @@ const CartoonEyes = () => {
       const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
       const blackEye = new THREE.Mesh(blackGeometry, blackMaterial);
       blackEye.position.z = 0.5;
+      // Scale pupil to match oval shape
+      blackEye.scale.set(1.5, 1, 1);
       group.add(blackEye);
 
       group.position.x = x;

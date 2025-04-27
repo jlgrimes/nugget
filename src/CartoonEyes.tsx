@@ -91,16 +91,7 @@ const CartoonEyes = () => {
           zIndex: 1,
         }}
       >
-        {(
-          [
-            'idle',
-            'listening',
-            'surprised',
-            'sleepy',
-            'angry',
-            'anxious',
-          ] as EyeState[]
-        ).map(state => (
+        {(['idle', 'listening'] as EyeState[]).map(state => (
           <button
             key={state}
             onClick={() => setCurrentState(state)}

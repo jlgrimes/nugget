@@ -1,13 +1,7 @@
 import * as THREE from 'three';
 import * as TWEEN from '@tweenjs/tween.js';
 
-export type EyeState =
-  | 'idle'
-  | 'surprised'
-  | 'sleepy'
-  | 'angry'
-  | 'anxious'
-  | 'listening';
+export type EyeState = 'idle' | 'listening';
 
 export class Eye {
   private group: THREE.Group;
@@ -164,30 +158,6 @@ export class Eye {
         const offset = this.basePosition.x > 0 ? 0.2 : -0.2;
         this.setPosition(offset, 0);
         this.startBobbing(0.1);
-        break;
-      case 'surprised':
-        this.stopBobbing();
-        this.startTween(new THREE.Vector3(1.2, 2, 1));
-        this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
-        this.setPosition(0, 0);
-        break;
-      case 'sleepy':
-        this.stopBobbing();
-        this.startTween(new THREE.Vector3(1.2, 0.8, 1));
-        this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
-        this.setPosition(0, 0);
-        break;
-      case 'angry':
-        this.stopBobbing();
-        this.startTween(new THREE.Vector3(1.5, 1.2, 1));
-        this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
-        this.setPosition(0, 0);
-        break;
-      case 'anxious':
-        this.stopBobbing();
-        this.startTween(new THREE.Vector3(1.1, 1.3, 1));
-        this.updateGeometry(this.createAnxiousGeometry());
-        this.setPosition(0, 0);
         break;
     }
   }

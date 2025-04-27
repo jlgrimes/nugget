@@ -19,11 +19,11 @@ export class Eye {
   private currentGeometry: THREE.BufferGeometry;
   private currentMaterial: THREE.Material;
   private currentTween: TWEEN.Tween<THREE.Vector3> | null = null;
-  private basePosition: number;
+  private basePosition: { x: number; y: number };
 
-  constructor(x: number) {
+  constructor(x: number, y: number = 0) {
     this.group = new THREE.Group();
-    this.basePosition = x;
+    this.basePosition = { x, y };
 
     // Create white part of the eye
     this.currentGeometry = new THREE.SphereGeometry(1, 32, 32);
@@ -32,7 +32,7 @@ export class Eye {
     this.whiteEye.scale.copy(this.currentScale);
     this.group.add(this.whiteEye);
 
-    this.group.position.x = x;
+    this.group.position.set(x, y, 0);
   }
 
   private createAnxiousGeometry(): THREE.BufferGeometry {
@@ -86,14 +86,20 @@ export class Eye {
     return this.group;
   }
 
-  public getPosition(): number {
-    return this.group.position.x;
+  public getPosition(): { x: number; y: number } {
+    return {
+      x: this.group.position.x,
+      y: this.group.position.y,
+    };
   }
 
-  public setPosition(x: number) {
-    const targetPosition = this.basePosition + x;
+  public setPosition(x: number, y: number = 0) {
+    const targetPosition = {
+      x: this.basePosition.x + x,
+      y: this.basePosition.y + y,
+    };
     new TWEEN.Tween(this.group.position)
-      .to({ x: targetPosition }, 500) // 500ms duration
+      .to(targetPosition, 500)
       .easing(TWEEN.Easing.Quadratic.Out)
       .start();
   }
@@ -120,36 +126,37 @@ export class Eye {
     this.currentState = state;
     switch (state) {
       case 'idle':
-        this.startTween(new THREE.Vector3(1, 1.3, 1));
+        this.startTween(new THREE.Vector3(0.8, 1, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
-        this.setPosition(0); // Reset to base position
+        const idleOffsetX = this.basePosition.x > 0 ? -0.8 : -0.1;
+        const idleOffsetY = -0.2;
+        this.setPosition(idleOffsetX, idleOffsetY);
         break;
       case 'listening':
         this.startTween(new THREE.Vector3(1.2, 1.5, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
-        // Move eyes slightly apart based on their base position
-        const offset = this.basePosition > 0 ? 0.2 : -0.2;
-        this.setPosition(offset);
+        const offset = this.basePosition.x > 0 ? 0.2 : -0.2;
+        this.setPosition(offset, 0);
         break;
       case 'surprised':
         this.startTween(new THREE.Vector3(1.2, 2, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
-        this.setPosition(0);
+        this.setPosition(0, 0);
         break;
       case 'sleepy':
         this.startTween(new THREE.Vector3(1.2, 0.8, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
-        this.setPosition(0);
+        this.setPosition(0, 0);
         break;
       case 'angry':
         this.startTween(new THREE.Vector3(1.5, 1.2, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
-        this.setPosition(0);
+        this.setPosition(0, 0);
         break;
       case 'anxious':
         this.startTween(new THREE.Vector3(1.1, 1.3, 1));
         this.updateGeometry(this.createAnxiousGeometry());
-        this.setPosition(0);
+        this.setPosition(0, 0);
         break;
     }
   }

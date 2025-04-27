@@ -5,7 +5,6 @@ export type EyeState = 'normal' | 'surprised' | 'sleepy' | 'angry';
 export class Eye {
   private group: THREE.Group;
   private whiteEye: THREE.Mesh;
-  private pupil: THREE.Mesh;
   private currentState: EyeState = 'normal';
   private targetScale: THREE.Vector3 = new THREE.Vector3(1.2, 1.5, 1);
   private currentScale: THREE.Vector3 = new THREE.Vector3(1.2, 1.5, 1);
@@ -21,14 +20,6 @@ export class Eye {
     this.whiteEye.scale.copy(this.currentScale);
     this.group.add(this.whiteEye);
 
-    // Create pupil
-    const pupilGeometry = new THREE.SphereGeometry(0.3, 32, 32);
-    const pupilMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    this.pupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
-    this.pupil.position.z = 0.5;
-    this.pupil.scale.copy(this.currentScale);
-    this.group.add(this.pupil);
-
     this.group.position.x = x;
   }
 
@@ -40,7 +31,6 @@ export class Eye {
     // Smoothly interpolate current scale to target scale
     this.currentScale.lerp(this.targetScale, this.animationSpeed);
     this.whiteEye.scale.copy(this.currentScale);
-    this.pupil.scale.copy(this.currentScale);
   }
 
   public setState(state: EyeState) {
@@ -65,17 +55,7 @@ export class Eye {
     return this.currentState;
   }
 
-  public lookAt(x: number, y: number) {
-    // Constrain pupil movement within the eye
-    const maxX = 0.3;
-    const maxY = 0.3;
-
-    this.pupil.position.x = THREE.MathUtils.clamp(x * 0.3, -maxX, maxX);
-    this.pupil.position.y = THREE.MathUtils.clamp(y * 0.3, -maxY, maxY);
-  }
-
   public dispose() {
     this.whiteEye.geometry.dispose();
-    this.pupil.geometry.dispose();
   }
 }

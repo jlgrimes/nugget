@@ -1,8 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { Eye, EyeState } from './Eye';
 
 const CartoonEyes = () => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [currentState, setCurrentState] = useState<EyeState>('normal');
+  const leftEyeRef = useRef<Eye | null>(null);
+  const rightEyeRef = useRef<Eye | null>(null);
+  const clockRef = useRef<THREE.Clock>(new THREE.Clock());
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -23,48 +28,20 @@ const CartoonEyes = () => {
     camera.position.z = 5;
 
     // Create eyes
-    const createEye = (x: number) => {
-      const group = new THREE.Group();
-
-      // White part of the eye (oval shape)
-      const whiteGeometry = new THREE.SphereGeometry(1, 32, 32);
-      const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const whiteEye = new THREE.Mesh(whiteGeometry, whiteMaterial);
-      // Scale to create oval shape (wider than tall)
-      whiteEye.scale.set(1.2, 1.5, 1);
-      group.add(whiteEye);
-
-      // Black part of the eye (pupil)
-      const blackGeometry = new THREE.SphereGeometry(0.3, 32, 32);
-      const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-      const blackEye = new THREE.Mesh(blackGeometry, blackMaterial);
-      blackEye.position.z = 0.5;
-      // Scale pupil to match oval shape
-      blackEye.scale.set(1.5, 1, 1);
-      group.add(blackEye);
-
-      group.position.x = x;
-      return group;
-    };
-
-    // Add eyes to scene
-    const leftEye = createEye(-1.5);
-    const rightEye = createEye(1.5);
-    scene.add(leftEye);
-    scene.add(rightEye);
+    leftEyeRef.current = new Eye(-1.5);
+    rightEyeRef.current = new Eye(1.5);
+    scene.add(leftEyeRef.current.getGroup());
+    scene.add(rightEyeRef.current.getGroup());
 
     // Animation
     const animate = () => {
       requestAnimationFrame(animate);
+      const deltaTime = clockRef.current.getDelta();
 
-      // Make eyes follow mouse
-      const mouseX = (window.innerWidth / 2) * 2 - 1;
-      const mouseY = -(window.innerHeight / 2) * 2 + 1;
-
-      leftEye.children[1].position.x = mouseX * 0.3;
-      leftEye.children[1].position.y = mouseY * 0.3;
-      rightEye.children[1].position.x = mouseX * 0.3;
-      rightEye.children[1].position.y = mouseY * 0.3;
+      if (leftEyeRef.current && rightEyeRef.current) {
+        leftEyeRef.current.update(deltaTime);
+        rightEyeRef.current.update(deltaTime);
+      }
 
       renderer.render(scene, camera);
     };
@@ -74,10 +51,10 @@ const CartoonEyes = () => {
       const mouseX = (event.clientX / window.innerWidth) * 2 - 1;
       const mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
 
-      leftEye.children[1].position.x = mouseX * 0.3;
-      leftEye.children[1].position.y = mouseY * 0.3;
-      rightEye.children[1].position.x = mouseX * 0.3;
-      rightEye.children[1].position.y = mouseY * 0.3;
+      if (leftEyeRef.current && rightEyeRef.current) {
+        leftEyeRef.current.lookAt(mouseX, mouseY);
+        rightEyeRef.current.lookAt(mouseX, mouseY);
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -97,22 +74,57 @@ const CartoonEyes = () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       mountRef.current?.removeChild(renderer.domElement);
-      scene.remove(leftEye);
-      scene.remove(rightEye);
-      leftEye.children.forEach(child => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry.dispose();
-        }
-      });
-      rightEye.children.forEach(child => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry.dispose();
-        }
-      });
+      if (leftEyeRef.current) {
+        leftEyeRef.current.dispose();
+      }
+      if (rightEyeRef.current) {
+        rightEyeRef.current.dispose();
+      }
     };
   }, []);
 
-  return <div ref={mountRef} style={{ width: '100%', height: '100vh' }} />;
+  // Update eye states when currentState changes
+  useEffect(() => {
+    if (leftEyeRef.current && rightEyeRef.current) {
+      leftEyeRef.current.setState(currentState);
+      rightEyeRef.current.setState(currentState);
+    }
+  }, [currentState]);
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
+      <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
+      <div
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          display: 'flex',
+          gap: '10px',
+          zIndex: 1,
+        }}
+      >
+        {(['normal', 'surprised', 'sleepy', 'angry'] as EyeState[]).map(
+          state => (
+            <button
+              key={state}
+              onClick={() => setCurrentState(state)}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: currentState === state ? '#4CAF50' : '#f0f0f0',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                color: currentState === state ? 'white' : 'black',
+              }}
+            >
+              {state.charAt(0).toUpperCase() + state.slice(1)}
+            </button>
+          )
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default CartoonEyes;

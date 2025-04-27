@@ -20,6 +20,8 @@ export class Eye {
   private currentMaterial: THREE.Material;
   private currentTween: TWEEN.Tween<THREE.Vector3> | null = null;
   private basePosition: { x: number; y: number };
+  private bobTween: TWEEN.Tween<THREE.Vector3> | null = null;
+  private isBobbing: boolean = false;
 
   constructor(x: number, y: number = 0) {
     this.group = new THREE.Group();
@@ -122,6 +124,29 @@ export class Eye {
       .start();
   }
 
+  private startBobbing() {
+    if (this.bobTween) {
+      this.bobTween.stop();
+    }
+
+    const startY = this.group.position.y;
+    this.bobTween = new TWEEN.Tween(this.group.position)
+      .to({ y: startY + 0.1 }, 2000)
+      .easing(TWEEN.Easing.Sinusoidal.InOut)
+      .yoyo(true)
+      .repeat(Infinity)
+      .start();
+    this.isBobbing = true;
+  }
+
+  private stopBobbing() {
+    if (this.bobTween) {
+      this.bobTween.stop();
+      this.bobTween = null;
+    }
+    this.isBobbing = false;
+  }
+
   public setState(state: EyeState) {
     this.currentState = state;
     switch (state) {
@@ -131,29 +156,35 @@ export class Eye {
         const idleOffsetX = this.basePosition.x > 0 ? -0.8 : -0.1;
         const idleOffsetY = -0.2;
         this.setPosition(idleOffsetX, idleOffsetY);
+        this.startBobbing();
         break;
       case 'listening':
         this.startTween(new THREE.Vector3(1.2, 1.5, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
         const offset = this.basePosition.x > 0 ? 0.2 : -0.2;
         this.setPosition(offset, 0);
+        this.startBobbing();
         break;
       case 'surprised':
+        this.stopBobbing();
         this.startTween(new THREE.Vector3(1.2, 2, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
         this.setPosition(0, 0);
         break;
       case 'sleepy':
+        this.stopBobbing();
         this.startTween(new THREE.Vector3(1.2, 0.8, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
         this.setPosition(0, 0);
         break;
       case 'angry':
+        this.stopBobbing();
         this.startTween(new THREE.Vector3(1.5, 1.2, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
         this.setPosition(0, 0);
         break;
       case 'anxious':
+        this.stopBobbing();
         this.startTween(new THREE.Vector3(1.1, 1.3, 1));
         this.updateGeometry(this.createAnxiousGeometry());
         this.setPosition(0, 0);
@@ -177,6 +208,9 @@ export class Eye {
   public dispose() {
     if (this.currentTween) {
       this.currentTween.stop();
+    }
+    if (this.bobTween) {
+      this.bobTween.stop();
     }
     this.currentGeometry.dispose();
     this.currentMaterial.dispose();

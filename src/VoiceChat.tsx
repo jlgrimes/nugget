@@ -82,11 +82,34 @@ export default function VoiceChat({ onStateChange }: VoiceChatProps) {
         },
       });
 
+      if (!sdpResponse.ok) {
+        const errorText = await sdpResponse.text();
+        throw new Error(
+          `SDP request failed: ${sdpResponse.status} ${errorText}`
+        );
+      }
+
+      const sdpText = await sdpResponse.text();
+      console.log('Received SDP:', sdpText);
+
+      if (!sdpText.startsWith('v=0')) {
+        throw new Error(
+          'Invalid SDP response: Response does not start with v=0'
+        );
+      }
+
       const answer = new RTCSessionDescription({
         type: 'answer',
-        sdp: await sdpResponse.text(),
+        sdp: sdpText,
       });
-      await pc.setRemoteDescription(answer);
+
+      try {
+        await pc.setRemoteDescription(answer);
+      } catch (error) {
+        console.error('Error setting remote description:', error);
+        console.error('SDP content:', sdpText);
+        throw error;
+      }
 
       setIsListening(true);
       onStateChange('listening');

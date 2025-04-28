@@ -186,10 +186,9 @@ export class Eye {
         this.startBobbing(0.15);
         break;
       case 'listening':
-        this.startTween(new THREE.Vector3(1.2, 1.5, 1));
+        this.startTween(new THREE.Vector3(1, 1.3, 1));
         this.updateGeometry(new THREE.SphereGeometry(1, 32, 32));
-        const offset = this.basePosition.x > 0 ? 0.2 : -0.2;
-        this.setPosition(offset, 0);
+        this.setPosition(0, 0);
         this.startBobbing(0.1);
         break;
       case 'thinking':

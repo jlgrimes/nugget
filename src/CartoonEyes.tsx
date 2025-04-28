@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { Eye, EyeState } from './Eye';
 
-const CartoonEyes = () => {
+interface CartoonEyesProps {
+  eyeState: EyeState;
+}
+
+const CartoonEyes = ({ eyeState }: CartoonEyesProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const [currentState, setCurrentState] = useState<EyeState>('idle');
   const leftEyeRef = useRef<Eye | null>(null);
   const rightEyeRef = useRef<Eye | null>(null);
   const clockRef = useRef<THREE.Clock>(new THREE.Clock());
@@ -75,46 +78,17 @@ const CartoonEyes = () => {
     };
   }, []);
 
-  // Update eye states when currentState changes
+  // Update eye states when eyeState prop changes
   useEffect(() => {
     if (leftEyeRef.current && rightEyeRef.current) {
-      leftEyeRef.current.setState(currentState);
-      rightEyeRef.current.setState(currentState);
+      leftEyeRef.current.setState(eyeState);
+      rightEyeRef.current.setState(eyeState);
     }
-  }, [currentState]);
+  }, [eyeState]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
       <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
-      <div
-        style={{
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          display: 'flex',
-          gap: '10px',
-          zIndex: 1,
-        }}
-      >
-        {(['idle', 'listening', 'thinking', 'talking-rest'] as EyeState[]).map(
-          state => (
-            <button
-              key={state}
-              onClick={() => setCurrentState(state)}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: currentState === state ? '#4CAF50' : '#f0f0f0',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                color: currentState === state ? 'white' : 'black',
-              }}
-            >
-              {state.charAt(0).toUpperCase() + state.slice(1)}
-            </button>
-          )
-        )}
-      </div>
     </div>
   );
 };
